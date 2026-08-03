@@ -1,0 +1,4 @@
+https://pages.cs.wisc.edu/~simonfrisk/batik-batik.zip
+https://pages.cs.wisc.edu/~simonfrisk/cvc5-cvc5.zip
+https://pages.cs.wisc.edu/~simonfrisk/galen-galen.zip
+https://pages.cs.wisc.edu/~simonfrisk/httpd-cspa.zip

@@ -1,0 +1,66 @@
+projection(
+  call(
+    "
+  func setDepth(b:bool, iter:int) -> int {
+    return cast<int>(b) * (iter + int(2));
+  }
+
+  func BFS(graph: Matrix<s, s, bool>, source: Vector<s, bool>) -> Vector<s, int> {
+    v = Vector<int>(graph.nrows);
+    v<source>[:] = int(1);
+
+    frontier = source;
+    reach = source;
+
+    for i in graph.nrows {
+      step = Vector<bool>(graph.nrows);
+      step<!reach> = frontier * graph;
+
+      // Accumulate is more efficient.
+      //v<step>[:] = i + int(2);
+      v += apply(setDepth, step, i);
+
+      frontier = step;
+      reach += step;
+    } until frontier.nvals == int(0);
+
+    return v;
+  }
+    ",
+    { %v, %val } = "BFS"(
+      matrix(
+        { %s, %t, %val } = projection(
+          selection(
+            access(%e, edges()),
+            {
+              label(%e) = "evlp_edge",
+            }
+          ),
+          {
+            %s = src(%e),
+            %t = trg(%e),
+            %val = constant_slot(true),
+          }
+        )
+      ),
+      vector(
+        { %v, %val } = projection(
+          selection(
+            access(%v, vertices()),
+            {
+              %v.orig_id = "1",
+            }
+          ),
+          {
+            %v = %v,
+            %val = constant_slot(true),
+          }
+        )
+      ),
+    )
+  ),
+  {
+    %id = %v.orig_id,
+    %val = %val,
+  }
+);

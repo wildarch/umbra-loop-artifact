@@ -1,0 +1,10 @@
+export POSTGRES_HOME=`pwd`/../scratch/postgres-home
+export POSTGRES_OUTPUT_DATA_DIR=`pwd`/../scratch/output-data
+export POSTGRES_VERSION=15.2
+export POSTGRES_CONTAINER_NAME=graphalytics-pg
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=postgres
+export POSTGRES_DATABASE=postgres
+export POSTGRES_SHARED_MEMORY=8g
+export POSTGRES_PORT=5432
+export POSTGRES_HOST=localhost

@@ -1,0 +1,45 @@
+projection(
+  call(
+    "
+func WCC(graph: Matrix<s, s, bool>) -> Matrix<s, s, bool> {
+    id = Vector<bool>(graph.nrows);
+    id[:] = bool(true);
+    label = diag(id);
+
+    for i in graph.nrows {
+        // Keep current label
+        alternatives = label;
+        // Labels reachable with a forward step
+        alternatives += graph * label;
+
+        // Select a new label
+        label = pickAny(alternatives);
+    }
+
+    return label;
+}
+
+    ",
+    { %v, %label, %val } = "WCC"(
+      matrix(
+        { %s, %t, %val } = projection(
+          selection(
+            access(%e, edges()),
+            {
+              label(%e) = "evlp_edge",
+            }
+          ),
+          {
+            %s = src(%e),
+            %t = trg(%e),
+            %val = constant_slot(true),
+          }
+        )
+      ),
+    )
+  ),
+  {
+    %id = %v.orig_id,
+    %val = %label.orig_id,
+  }
+)

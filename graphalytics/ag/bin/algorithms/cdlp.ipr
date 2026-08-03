@@ -1,0 +1,72 @@
+projection(
+  selection(
+    call(
+      "
+func isMax(v: int, max: trop_max_int) -> bool {
+  return cast<trop_max_int>(v) == max
+    * (v != zero(int));
+}
+
+func CDLP(graph: Matrix<s, s, bool>) -> Matrix<s, s, bool> {
+    iterations = int(5);
+    id = Vector<bool>(graph.nrows);
+    id[:] = bool(true);
+    L = diag(id);
+
+    for i in int(0):iterations {
+        step_forward = cast<int>(graph) * cast<int>(L);
+        step_backward = cast<int>(graph.T) * cast<int>(L);
+        step = step_forward (.+) step_backward;
+
+        // Max per row
+        max = reduceRows(cast<trop_max_int>(step));
+
+        // Broadcast to all columns
+        b = Vector<trop_max_int>(graph.ncols);
+        b[:] = one(trop_max_int);
+        max_broadcast = max * b.T;
+
+        // Matrix with true at every position where L has max element.
+        step_max = step (.isMax) max_broadcast;
+
+        // Keep only one assigned label per vertex.
+        // The implementation always picks the one with the lowest id.
+        L = pickAny(step_max);
+    }
+
+    // Map isolated nodes to their own label.
+    connected = reduceRows(graph) (.+) reduceRows(graph.T);
+    isolated = Vector<bool>(graph.nrows);
+    isolated<!connected>[:] = bool(true);
+    L = diag(isolated) (.+) L;
+
+    return L;
+}
+      ",
+      { %v, %label, %val } = "CDLP"(
+        matrix(
+          { %s, %t, %val } = projection(
+            selection(
+              access(%e, edges()),
+              {
+                label(%e) = "evlp_edge",
+              }
+            ),
+            {
+              %s = src(%e),
+              %t = trg(%e),
+              %val = constant_slot(true),
+            }
+          )
+        ),
+      )
+    ),
+    {
+      expr(%val)
+    }
+  ),
+  {
+    %id = %v.orig_id,
+    %val = %label.orig_id,
+  }
+);

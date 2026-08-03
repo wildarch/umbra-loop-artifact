@@ -1,0 +1,48 @@
+projection(
+  call(
+    "
+func SSSP(graph: Matrix<s1, s1, trop_real>, source: Vector<s1, bool>) -> Vector<s1, trop_real> {
+    v = cast<trop_real>(source);
+    for i in graph.nrows {
+        v += v * graph;
+    }
+    return v;
+}
+    ",
+    { %v, %val } = "SSSP"(
+      matrix(
+        { %s, %t, %val } = projection(
+          selection(
+            access(%e, edges()),
+            {
+              label(%e) = "evlp_edge",
+            }
+          ),
+          {
+            %s = src(%e),
+            %t = trg(%e),
+            %val = %e.weight,
+          }
+        )
+      ),
+      vector(
+        { %v, %val } = projection(
+          selection(
+            access(%v, vertices()),
+            {
+              %v.orig_id = "1",
+            }
+          ),
+          {
+            %v = %v,
+            %val = constant_slot(true),
+          }
+        )
+      ),
+    )
+  ),
+  {
+    %id = %v.orig_id,
+    %val = %val,
+  }
+)

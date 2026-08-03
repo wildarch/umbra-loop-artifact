@@ -1,0 +1,9 @@
+Bootstrap: docker
+From: ghcr.io/avantlab/avantgraph:2026-04
+
+%post
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends maven python3-pip
+    apt-get clean
+
+    pip3 install --break-system-packages duckdb
